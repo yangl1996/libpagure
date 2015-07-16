@@ -2,12 +2,12 @@ from distutils.core import setup
 setup(
     name = 'libpagure',
     packages = ['libpagure'], # this must be the same as the name above
-    version = '0.2',
+    version = '0.21',
     description = 'A Python library for Pagure APIs.',
     author = 'Lei Yang',
     author_email = 'yltt1234512@gmail.com',
     url = 'https://github.com/yangl1996/libpagure', # use the URL to the github repo
-    download_url = 'https://github.com/yangl1996/libpagure/tarball/0.2', # I'll explain this in a second
+    download_url = 'https://github.com/yangl1996/libpagure/tarball/0.21', # I'll explain this in a second
     keywords = ['pagure', 'api', 'library'], # arbitrary keywords
     classifiers = ['Programming Language :: Python'],
     license = "GNU General Public License v2.0"
