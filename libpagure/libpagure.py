@@ -1,5 +1,4 @@
 import requests
-import json
 
 
 class Pagure:
@@ -27,7 +26,7 @@ class Pagure:
         """
         request_url = "{}/api/0/version".format(self.InstanceURL)
         r = requests.get(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value['version']
 
     def list_users(self, pattern=None):
@@ -41,7 +40,7 @@ class Pagure:
             r = requests.get(request_url, headers=self.Header)
         else:
             r = requests.get(request_url, params={'pattern': pattern})
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value['users']
 
     def list_tags(self, pattern=None):
@@ -58,7 +57,7 @@ class Pagure:
             r = requests.get(request_url, headers=self.Header)
         else:
             r = requests.get(request_url, headers=self.Header, params={'pattern': pattern})
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value['tags']
 
     def list_groups(self, pattern=None):
@@ -72,7 +71,7 @@ class Pagure:
             r = requests.get(request_url, headers=self.Header)
         else:
             r = requests.get(request_url, headers=self.Header, params={'pattern': pattern})
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value['groups']
 
     def error_codes(self):
@@ -82,7 +81,7 @@ class Pagure:
         """
         request_url = "{}/api/0/error_codes"
         r = requests.get(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value
 
     def list_requests(self, status=None, assignee=None, author=None):
@@ -106,7 +105,7 @@ class Pagure:
         if author is not None:
             payload['author'] = author
         r = requests.get(request_url, headers=self.Header, params=payload)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value['requests']
 
     def request_info(self, request_id):
@@ -121,7 +120,7 @@ class Pagure:
             request_url = "{}/api/0/fork/{}/{}/pull-request/{}".format(self.InstanceURL, self.ForkUsername,
                                                                        self.Repository, request_id)
         r = requests.get(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value
 
     def merge_request(self, request_id):
@@ -136,7 +135,7 @@ class Pagure:
             request_url = "{}/api/0/fork/{}/{}/pull-request/{}/merge".format(self.InstanceURL, self.ForkUsername,
                                                                              self.Repository, request_id)
         r = requests.post(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         if return_value['message'] == "Changes merged!":
             result = (True, return_value['message'])
         else:
@@ -155,7 +154,7 @@ class Pagure:
             request_url = "{}/api/0/fork/{}/{}/pull-request/{}/close".format(self.InstanceURL, self.ForkUsername,
                                                                              self.Repository, request_id)
         r = requests.post(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         if return_value['message'] == "Pull-request closed!":
             result = (True, return_value['message'])
         else:
@@ -185,7 +184,7 @@ class Pagure:
         if row is not None:
             payload['row'] = row
         r = requests.post(request_url, data=payload, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         if return_value['message'] == "Comment added":
             result = (True, return_value['message'])
         else:
@@ -215,7 +214,7 @@ class Pagure:
         if uid is not None:
             payload['uid'] = uid
         r = requests.post(request_url, data=payload, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         if return_value['message'] == "Flag added" or return_value['message'] == "Flag updated":
             result = (True, return_value['message'])
         else:
@@ -238,7 +237,7 @@ class Pagure:
         if private is not None:
             payload['private'] = private
         r = requests.post(request_url, data=payload, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         if return_value['message'] == "Issue created":
             result = (True, return_value['message'])
         else:
@@ -268,7 +267,7 @@ class Pagure:
         if author is not None:
             payload['author'] = author
         r = requests.get(request_url, params=payload, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value['issues']
 
     def issue_info(self, issue_id):
@@ -282,7 +281,7 @@ class Pagure:
         else:
             request_url = "{}/api/0/fork/{}/{}/issue/{}".format(self.InstanceURL, self.ForkUsername, self.Repository, issue_id)
         r = requests.get(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value
 
     def get_list_comment(self, issue_id, comment_id):
@@ -299,7 +298,7 @@ class Pagure:
             request_url = "{}/api/0/fork/{}/{}/issue/{}/comment/{}".format(self.InstanceURL, self.ForkUsername,
                                                                            self.Repository, issue_id, comment_id)
         r = requests.get(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value
 
     def change_issue_status(self, issue_id, new_status):
@@ -316,7 +315,7 @@ class Pagure:
                                                                        self.Repository, issue_id)
         payload = {'status': new_status}
         r = requests.post(request_url, data=payload, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         if return_value['message'].startswith("Successfully"):
             result = (True, return_value['message'])
         else:
@@ -337,7 +336,7 @@ class Pagure:
                                                                         self.Repository, issue_id)
         payload = {'comment': body}
         r = requests.post(request_url, data=payload, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         if return_value['message'] == 'Comment added':
             result = (True, return_value['message'])
         else:
@@ -354,7 +353,7 @@ class Pagure:
         else:
             request_url = "{}/api/0/fork/{}/{}/git/tags".format(self.InstanceURL, self.ForkUsername, self.Repository)
         r = requests.get(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value['tags']
 
     def list_projects(self, tags=None, username=None, fork=None):
@@ -374,7 +373,7 @@ class Pagure:
         if fork is not None:
             payload['fork'] = fork
         r = requests.get(request_url, params=payload, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value['projects']
 
     def user_info(self, username):
@@ -385,5 +384,5 @@ class Pagure:
         """
         request_url = "{}/api/0/user/{}".format(self.InstanceURL, username)
         r = requests.get(request_url, headers=self.Header)
-        return_value = json.loads(r.text)
+        return_value = r.json()
         return return_value
