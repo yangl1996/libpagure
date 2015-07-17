@@ -1,6 +1,20 @@
 import requests
 
 
+class NullHandler(logging.Handler):
+    ''' Null logger to avoid spurious messages
+
+    '''
+    def emit(self, record):
+        pass
+
+LOG = logging.getLogger("libpagure")
+
+# Add the null handler to top-level logger used by the library
+hand = NullHandler()
+LOG.addHandler(hand)
+
+
 class Pagure:
     # TODO: add error handling
     # TODO: write some unit tests
