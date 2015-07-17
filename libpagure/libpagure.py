@@ -1,10 +1,9 @@
 import requests
+import logging
 
 
 class NullHandler(logging.Handler):
-    ''' Null logger to avoid spurious messages
-
-    '''
+    # Null logger to avoid spurious messages
     def emit(self, record):
         pass
 
@@ -41,7 +40,7 @@ class Pagure:
         self.session = requests.session()
         self.insecure = insecure
 
-    def __call_api(url, method='GET', params=None, data=None):
+    def __call_api(self, url, method='GET', params=None, data=None):
         """ Private method used to call the API.
         It returns the raw JSON returned by the API or raises an exception
         if something goes wrong.
@@ -59,16 +58,16 @@ class Pagure:
             method=method,
             url=url,
             params=params,
-            headers=self.headers,
+            headers=self.Header,
             data=data,
             verify=not self.insecure,
         )
-        self._save_cookies()
+        req._save_cookies()
 
         output = None
         try:
             output = req.json()
-        except Exception, err:
+        except Exception as err:
             LOG.debug(req.text)
             # TODO: use a dedicated error class
             raise Exception('Error while decoding JSON: {0}'.format(err))
@@ -78,7 +77,7 @@ class Pagure:
             if output is None:
                 # TODO: use a dedicated error class
                 raise Exception(
-                    'No output returned by %s' % response.url)
+                    'No output returned by %s' % req.url)
 
         return output
 
@@ -88,7 +87,7 @@ class Pagure:
         :return:
         """
         request_url = "{}/api/0/version".format(self.InstanceURL)
-        return_value = __call_api(request_url)
+        return_value = self.__call_api(request_url)
         return return_value['version']
 
     def list_users(self, pattern=None):
@@ -98,11 +97,10 @@ class Pagure:
         :return:
         """
         request_url = "{}/api/0/users".format(self.InstanceURL)
-        return_value = __call_api(request_url)
         params = None
         if pattern:
             params = {'pattern': pattern}
-        return_value = __call_api(request_url, params=params)
+        return_value = self.__call_api(request_url, params=params)
         return return_value['users']
 
     def list_tags(self, pattern=None):
@@ -121,7 +119,7 @@ class Pagure:
         if pattern:
             params = {'pattern': pattern}
 
-        return_value = __call_api(request_url, params=params)
+        return_value = self.__call_api(request_url, params=params)
         return return_value['tags']
 
     def list_groups(self, pattern=None):
@@ -135,7 +133,7 @@ class Pagure:
         if pattern:
             params = {'pattern': pattern}
 
-        return_value = __call_api(request_url, params=params)
+        return_value = self.__call_api(request_url, params=params)
         return return_value['groups']
 
     def error_codes(self):
@@ -144,7 +142,7 @@ class Pagure:
         :return:
         """
         request_url = "{}/api/0/error_codes".format(self.InstanceURL)
-        return_value = __call_api(request_url)
+        return_value = self.__call_api(request_url)
         return return_value
 
     def list_requests(self, status=None, assignee=None, author=None):
@@ -169,7 +167,7 @@ class Pagure:
         if author is not None:
             payload['author'] = author
 
-        return_value = __call_api(request_url, params=payload)
+        return_value = self.__call_api(request_url, params=payload)
         return return_value['requests']
 
     def request_info(self, request_id):
@@ -186,7 +184,7 @@ class Pagure:
                 self.InstanceURL, self.ForkUsername, self.Repository,
                 request_id)
 
-        return_value = __call_api(request_url)
+        return_value = self.__call_api(request_url)
         return return_value
 
     def merge_request(self, request_id):
@@ -203,7 +201,7 @@ class Pagure:
                 self.InstanceURL, self.ForkUsername, self.Repository,
                 request_id)
 
-        return_value = __call_api(request_url, method='POST')
+        return_value = self.__call_api(request_url, method='POST')
 
         if return_value['message'] == "Changes merged!":
             result = (True, return_value['message'])
@@ -225,7 +223,7 @@ class Pagure:
                 self.InstanceURL, self.ForkUsername, self.Repository,
                 request_id)
 
-        return_value = __call_api(request_url, method='POST')
+        return_value = self.__call_api(request_url, method='POST')
 
         if return_value['message'] == "Pull-request closed!":
             result = (True, return_value['message'])
@@ -259,7 +257,7 @@ class Pagure:
         if row is not None:
             payload['row'] = row
 
-        return_value = __call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'] == "Comment added":
             result = (True, return_value['message'])
@@ -293,7 +291,7 @@ class Pagure:
         if uid is not None:
             payload['uid'] = uid
 
-        return_value = __call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'] == "Flag added" or return_value['message'] == "Flag updated":
             result = (True, return_value['message'])
@@ -320,7 +318,7 @@ class Pagure:
         if private is not None:
             payload['private'] = private
 
-        return_value = __call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'] == "Issue created":
             result = (True, return_value['message'])
@@ -354,7 +352,7 @@ class Pagure:
         if author is not None:
             payload['author'] = author
 
-        return_value = __call_api(request_url, params=payload)
+        return_value = self.__call_api(request_url, params=payload)
 
         return return_value['issues']
 
@@ -372,7 +370,7 @@ class Pagure:
                 self.InstanceURL, self.ForkUsername, self.Repository,
                 issue_id)
 
-        return_value = __call_api(request_url, params=payload)
+        return_value = self.__call_api(request_url)
 
         return return_value
 
@@ -391,7 +389,7 @@ class Pagure:
                 self.InstanceURL, self.ForkUsername, self.Repository,
                 issue_id, comment_id)
 
-        return_value = __call_api(request_url, params=payload)
+        return_value = self.__call_api(request_url)
 
         return return_value
 
@@ -412,7 +410,7 @@ class Pagure:
 
         payload = {'status': new_status}
 
-        return_value = __call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'].startswith("Successfully"):
             result = (True, return_value['message'])
@@ -437,7 +435,7 @@ class Pagure:
 
         payload = {'comment': body}
 
-        return_value = __call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'] == 'Comment added':
             result = (True, return_value['message'])
@@ -457,7 +455,7 @@ class Pagure:
             request_url = "{}/api/0/fork/{}/{}/git/tags".format(
                 self.InstanceURL, self.ForkUsername, self.Repository)
 
-        return_value = __call_api(request_url)
+        return_value = self.__call_api(request_url)
 
         return return_value['tags']
 
@@ -479,7 +477,7 @@ class Pagure:
         if fork is not None:
             payload['fork'] = fork
 
-        return_value = __call_api(request_url, params=payload)
+        return_value = self.__call_api(request_url, params=payload)
 
         return return_value['projects']
 
@@ -491,6 +489,6 @@ class Pagure:
         """
         request_url = "{}/api/0/user/{}".format(self.InstanceURL, username)
 
-        return_value = __call_api(request_url)
+        return_value = self.__call_api(request_url)
 
         return return_value
