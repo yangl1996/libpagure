@@ -191,8 +191,7 @@ class Pagure:
         """
         Merge a pull request.
         :param request_id: the id of the request
-        :return: a dictionary, key 'result' contains a boolean indicating whether the operation was successful,
-                               key 'message' contains the message returned from Pagure
+        :return:
         """
         if self.ForkUsername is None:
             request_url = "{}/api/0/{}/pull-request/{}/merge".format(
@@ -205,17 +204,15 @@ class Pagure:
         return_value = self.__call_api(request_url, method='POST')
 
         if return_value['message'] == "Changes merged!":
-            return_value['result'] = True
+            return True
         else:
-            return_value['result'] = False
-        return return_value
+            raise Exception(return_value['message'])
 
     def close_request(self, request_id):
         """
         Close a pull request.
         :param request_id: the id of the request
-        :return: a dictionary, key 'result' contains a boolean indicating whether the operation was successful,
-                               key 'message' contains the message returned from Pagure
+        :return:
         """
         if self.ForkUsername is None:
             request_url = "{}/api/0/{}/pull-request/{}/close".format(
@@ -228,10 +225,9 @@ class Pagure:
         return_value = self.__call_api(request_url, method='POST')
 
         if return_value['message'] == "Pull-request closed!":
-            return_value['result'] = True
+            return True
         else:
-            return_value['result'] = False
-        return return_value
+            raise Exception(return_value['message'])
 
     def comment_request(self, request_id, body, commit=None, filename=None, row=None):
         """
@@ -241,8 +237,7 @@ class Pagure:
         :param commit: which commit to comment on
         :param filename: which file to comment on
         :param row: which line of code to comment on
-        :return: a dictionary, key 'result' contains a boolean indicating whether the operation was successful,
-                               key 'message' contains the message returned from Pagure
+        :return:
         """
         if self.ForkUsername is None:
             request_url = "{}/api/0/{}/pull-request/{}/comment".format(
@@ -263,10 +258,9 @@ class Pagure:
         return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'] == "Comment added":
-            return_value['result'] = True
+            return True
         else:
-            return_value['result'] = False
-        return return_value
+            raise Exception(return_value['message'])
 
     def flag_request(self, request_id, username, percent, comment, url, uid=None, commit=None):
         """
@@ -278,8 +272,7 @@ class Pagure:
         :param url: a relevant URL
         :param uid: a unique id used to identify the flag. If not provided, pagure will generate one
         :param commit: which commit to flag on
-        :return: a dictionary, key 'result' contains a boolean indicating whether the operation was successful,
-                               key 'message' contains the message returned from Pagure
+        :return:
         """
         if self.ForkUsername is None:
             request_url = "{}/api/0/{}/pull-request/{}/flag".format(
@@ -298,10 +291,9 @@ class Pagure:
         return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'] == "Flag added" or return_value['message'] == "Flag updated":
-            return_value['result'] = True
+            return True
         else:
-            return_value['result'] = False
-        return return_value
+            raise Exception(return_value['message'])
 
     def create_issue(self, title, content, private=None):
         """
@@ -309,8 +301,7 @@ class Pagure:
         :param title: the title of the issue
         :param content: the description of the issue
         :param private: whether create this issue as private
-        :return: a dictionary, key 'result' contains a boolean indicating whether the operation was successful,
-                               key 'message' contains the message returned from Pagure
+        :return:
         """
         if self.ForkUsername is None:
             request_url = "{}/api/0/{}/new_issue".format(
@@ -326,10 +317,9 @@ class Pagure:
         return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'] == "Issue created":
-            return_value['result'] = True
+            return True
         else:
-            return_value['result'] = False
-        return return_value
+            raise Exception(return_value['message'])
 
     def list_issues(self, status=None, tags=None, assignee=None, author=None):
         """
@@ -403,8 +393,7 @@ class Pagure:
         Change the status of an issue.
         :param issue_id: the id of the issue
         :param new_status: the new status fo the issue
-        :return: a dictionary, key 'result' contains a boolean indicating whether the operation was successful,
-                               key 'message' contains the message returned from Pagure
+        :return:
         """
         if self.ForkUsername is None:
             request_url = "{}/api/0/{}/issue/{}/status".format(
@@ -419,18 +408,16 @@ class Pagure:
         return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'].startswith("Successfully"):
-            return_value['result'] = True
+            return True
         else:
-            return_value['result'] = False
-        return return_value
+            raise Exception(return_value['message'])
 
     def comment_issue(self, issue_id, body):
         """
         Comment to an issue.
         :param issue_id: the id of the comment
         :param body: the comment body
-        :return: a dictionary, key 'result' contains a boolean indicating whether the operation was successful,
-                               key 'message' contains the message returned from Pagure
+        :return:
         """
         if self.ForkUsername is None:
             request_url = "{}/api/0/{}/issue/{}/comment".format(
@@ -445,10 +432,9 @@ class Pagure:
         return_value = self.__call_api(request_url, method='POST', data=payload)
 
         if return_value['message'] == 'Comment added':
-            return_value['result'] = True
+            return True
         else:
-            return_value['result'] = False
-        return return_value
+            raise Exception(return_value['message'])
 
     def project_tags(self):
         """
