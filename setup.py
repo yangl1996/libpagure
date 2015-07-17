@@ -13,4 +13,5 @@ setup(
         'Programming Language :: Python',
     ],
     license='GNU General Public License v2.0',
+    install_requires=['requests'],
 )
