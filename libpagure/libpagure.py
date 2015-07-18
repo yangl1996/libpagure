@@ -17,7 +17,8 @@ hand = NullHandler()
 LOG.addHandler(hand)
 
 
-class Pagure:
+class Pagure(object):
+
     # TODO: add error handling
     # TODO: write some unit tests
     def __init__(
