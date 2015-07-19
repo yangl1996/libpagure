@@ -38,7 +38,7 @@ class Pagure(object):
         """
         self.token = pagure_token
         self.repo = pagure_repository
-        self.ForkUsername = fork_username
+        self.username = fork_username
         self.InstanceURL = instance_url
         self.header = {"Authorization": "token " + self.token}
         self.session = requests.session()
@@ -113,12 +113,12 @@ class Pagure(object):
         :param pattern: filters the starting letters of the return value
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/tags".format(
                 self.InstanceURL, self.repo)
         else:
             request_url = "{}/api/0/fork/{}/{}/tags".format(
-                self.InstanceURL, self.ForkUsername, self.repo)
+                self.InstanceURL, self.username, self.repo)
         params = None
         if pattern:
             params = {'pattern': pattern}
@@ -157,12 +157,12 @@ class Pagure(object):
         :param author: filters the author of the requests
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/pull-requests".format(
                 self.InstanceURL, self.repo)
         else:
             request_url = "{}/api/0/fork/{}/{}/pull-requests".format(
-                self.InstanceURL, self.ForkUsername, self.repo)
+                self.InstanceURL, self.username, self.repo)
         payload = {}
         if status is not None:
             payload['status'] = status
@@ -180,12 +180,12 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/pull-request/{}".format(
                 self.InstanceURL, self.repo, request_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/pull-request/{}".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 request_id)
 
         return_value = self.__call_api(request_url)
@@ -197,12 +197,12 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/pull-request/{}/merge".format(
                 self.InstanceURL, self.repo, request_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/pull-request/{}/merge".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 request_id)
 
         return_value = self.__call_api(request_url, method='POST')
@@ -216,12 +216,12 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/pull-request/{}/close".format(
                 self.InstanceURL, self.repo, request_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/pull-request/{}/close".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 request_id)
 
         return_value = self.__call_api(request_url, method='POST')
@@ -239,12 +239,12 @@ class Pagure(object):
         :param row: which line of code to comment on
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/pull-request/{}/comment".format(
                 self.InstanceURL, self.repo, request_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/pull-request/{}/comment".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 request_id)
 
         payload = {'comment': body}
@@ -272,12 +272,12 @@ class Pagure(object):
         :param commit: which commit to flag on
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/pull-request/{}/flag".format(
                 self.InstanceURL, self.repo, request_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/pull-request/{}/flag".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 request_id)
 
         payload = {'username': username, 'percent': percent, 'comment': comment, 'url': url}
@@ -299,12 +299,12 @@ class Pagure(object):
         :param private: whether create this issue as private
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/new_issue".format(
                 self.InstanceURL, self.repo)
         else:
             request_url = "{}/api/0/fork/{}/{}/new_issue".format(
-                self.InstanceURL, self.ForkUsername, self.repo)
+                self.InstanceURL, self.username, self.repo)
 
         payload = {'title': title, 'issue_content': content}
         if private is not None:
@@ -324,12 +324,12 @@ class Pagure(object):
         :param author: filters the author of the issues
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/issues".format(
                 self.InstanceURL, self.repo)
         else:
             request_url = "{}/api/0/fork/{}/{}/issues".format(
-                self.InstanceURL, self.ForkUsername, self.repo)
+                self.InstanceURL, self.username, self.repo)
 
         payload = {}
         if status is not None:
@@ -351,12 +351,12 @@ class Pagure(object):
         :param issue_id: the id of the issue
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/issue/{}".format(
                 self.InstanceURL, self.repo, issue_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/issue/{}".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 issue_id)
 
         return_value = self.__call_api(request_url)
@@ -370,12 +370,12 @@ class Pagure(object):
         :param comment_id: the id of the comment
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/issue/{}/comment/{}".format(
                 self.InstanceURL, self.repo, issue_id, comment_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/issue/{}/comment/{}".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 issue_id, comment_id)
 
         return_value = self.__call_api(request_url)
@@ -389,12 +389,12 @@ class Pagure(object):
         :param new_status: the new status fo the issue
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/issue/{}/status".format(
                 self.InstanceURL, self.repo, issue_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/issue/{}/status".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 issue_id)
 
         payload = {'status': new_status}
@@ -411,12 +411,12 @@ class Pagure(object):
         :param body: the comment body
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/issue/{}/comment".format(
                 self.InstanceURL, self.repo, issue_id)
         else:
             request_url = "{}/api/0/fork/{}/{}/issue/{}/comment".format(
-                self.InstanceURL, self.ForkUsername, self.repo,
+                self.InstanceURL, self.username, self.repo,
                 issue_id)
 
         payload = {'comment': body}
@@ -431,12 +431,12 @@ class Pagure(object):
         List all git tags made to the project.
         :return:
         """
-        if self.ForkUsername is None:
+        if self.username is None:
             request_url = "{}/api/0/{}/git/tags".format(
                 self.InstanceURL, self.repo)
         else:
             request_url = "{}/api/0/fork/{}/{}/git/tags".format(
-                self.InstanceURL, self.ForkUsername, self.repo)
+                self.InstanceURL, self.username, self.repo)
 
         return_value = self.__call_api(request_url)
 
