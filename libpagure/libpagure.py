@@ -36,11 +36,11 @@ class Pagure(object):
         :param instance_url: the URL of pagure instance name
         :return:
         """
-        self.Token = pagure_token
+        self.token = pagure_token
         self.Repository = pagure_repository
         self.ForkUsername = fork_username
         self.InstanceURL = instance_url
-        self.Header = {"Authorization": "token " + self.Token}
+        self.Header = {"Authorization": "token " + self.token}
         self.session = requests.session()
         self.insecure = insecure
 
