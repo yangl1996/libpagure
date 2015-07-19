@@ -40,7 +40,7 @@ class Pagure(object):
         self.Repository = pagure_repository
         self.ForkUsername = fork_username
         self.InstanceURL = instance_url
-        self.Header = {"Authorization": "token " + self.token}
+        self.header = {"Authorization": "token " + self.token}
         self.session = requests.session()
         self.insecure = insecure
 
@@ -62,7 +62,7 @@ class Pagure(object):
             method=method,
             url=url,
             params=params,
-            headers=self.Header,
+            headers=self.header,
             data=data,
             verify=not self.insecure,
         )
