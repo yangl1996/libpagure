@@ -4,6 +4,7 @@
 import requests
 import logging
 
+from .exceptions import APIError
 
 class NullHandler(logging.Handler):
     # Null logger to avoid spurious messages
@@ -82,6 +83,8 @@ class Pagure(object):
                 # TODO: use a dedicated error class
                 raise Exception(
                     'No output returned by %s' % req.url)
+            if 'error_code' in output:
+                raise APIError(output['error'])
 
         return output
 
