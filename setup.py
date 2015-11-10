@@ -6,7 +6,7 @@ from distutils.core import setup
 setup(
     name='libpagure',
     packages=['libpagure'],
-    version='0.3',
+    version='0.4',
     description='A Python library for Pagure APIs.',
     author='Lei Yang',
     author_email='yltt1234512@gmail.com',
@@ -21,7 +21,7 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7'
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries',
 
