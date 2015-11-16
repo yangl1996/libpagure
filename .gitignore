@@ -5,6 +5,9 @@
 .idea/vcs.xml
 .idea/workspace.xml
 MANIFEST
-dist/libpagure-v0.11.tar.gz
+dist
 *.gz
 build
+*.pyc
+*.swp
+*.egg-info
