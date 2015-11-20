@@ -67,7 +67,6 @@ class Pagure(object):
             data=data,
             verify=not self.insecure,
         )
-        req._save_cookies()
 
         output = None
         try:
