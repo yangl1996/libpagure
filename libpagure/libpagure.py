@@ -309,7 +309,7 @@ class Pagure(object):
                 self.instance, self.username, self.repo)
 
         payload = {'title': title, 'issue_content': content}
-        if private is not None:
+        if private:
             payload['private'] = private
 
         return_value = self.__call_api(request_url, method='POST', data=payload)
