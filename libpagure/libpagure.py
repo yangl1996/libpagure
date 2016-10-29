@@ -33,7 +33,8 @@ class Pagure(object):
         Create an instance.
         :param pagure_token: pagure API token
         :param pagure_repository: pagure project name
-        :param fork_username: if this is a fork, it's the username of the fork creator
+        :param fork_username: if this is a fork, it's the username
+             of the fork creator
         :param instance_url: the URL of pagure instance name
         :return:
         """
@@ -234,7 +235,8 @@ class Pagure(object):
         if return_value['message'] != "Pull-request closed!":
             raise Exception(return_value['message'])
 
-    def comment_request(self, request_id, body, commit=None, filename=None, row=None):
+    def comment_request(self, request_id, body, commit=None,
+                        filename=None, row=None):
         """
         Create a comment on the request.
         :param request_id: the id of the request
@@ -260,12 +262,14 @@ class Pagure(object):
         if row is not None:
             payload['row'] = row
 
-        return_value = self.__call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url,
+                                       method='POST', data=payload)
 
         if return_value['message'] != "Comment added":
             raise Exception(return_value['message'])
 
-    def flag_request(self, request_id, username, percent, comment, url, uid=None, commit=None):
+    def flag_request(self, request_id, username, percent, comment, url,
+                     uid=None, commit=None):
         """
         Add or edit a flag of the request.
         :param request_id: the id of the request
@@ -273,7 +277,8 @@ class Pagure(object):
         :param percent: the percentage of completion to be displayed
         :param comment: a short message summarizing the flag
         :param url: a relevant URL
-        :param uid: a unique id used to identify the flag. If not provided, pagure will generate one
+        :param uid: a unique id used to identify the flag.
+            If not provided, pagure will generate one
         :param commit: which commit to flag on
         :return:
         """
@@ -285,13 +290,15 @@ class Pagure(object):
                 self.instance, self.username, self.repo,
                 request_id)
 
-        payload = {'username': username, 'percent': percent, 'comment': comment, 'url': url}
+        payload = {'username': username, 'percent': percent,
+                   'comment': comment, 'url': url}
         if commit is not None:
             payload['commit'] = commit
         if uid is not None:
             payload['uid'] = uid
 
-        return_value = self.__call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url,
+                                       method='POST', data=payload)
 
         if return_value['message'] != "Flag added" and return_value['message'] != "Flag updated":
             raise Exception(return_value['message'])
@@ -315,7 +322,8 @@ class Pagure(object):
         if private:
             payload['private'] = private
 
-        return_value = self.__call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url,
+                                       method='POST', data=payload)
 
         if return_value['message'] != "Issue created":
             raise Exception(return_value['message'])
@@ -404,7 +412,8 @@ class Pagure(object):
 
         payload = {'status': new_status}
 
-        return_value = self.__call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url,
+                                       method='POST', data=payload)
 
         if not return_value['message'].startswith("Successfully"):
             raise Exception(return_value['message'])
@@ -426,7 +435,8 @@ class Pagure(object):
 
         payload = {'comment': body}
 
-        return_value = self.__call_api(request_url, method='POST', data=payload)
+        return_value = self.__call_api(request_url,
+                                       method='POST', data=payload)
 
         if return_value['message'] != 'Comment added':
             raise Exception(return_value['message'])
