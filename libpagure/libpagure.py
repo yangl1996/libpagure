@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-
 import requests
 import logging
 
 from .exceptions import APIError
+
 
 class NullHandler(logging.Handler):
     # Null logger to avoid spurious messages
@@ -24,8 +24,8 @@ class Pagure(object):
     # TODO: write some unit tests
     def __init__(
             self,
-            pagure_token,
-            pagure_repository,
+            pagure_token=None,
+            pagure_repository=None,
             fork_username=None,
             instance_url="https://pagure.io",
             insecure=False):
@@ -41,9 +41,12 @@ class Pagure(object):
         self.repo = pagure_repository
         self.username = fork_username
         self.instance = instance_url
-        self.header = {"Authorization": "token " + self.token}
         self.session = requests.session()
         self.insecure = insecure
+        if self.token:
+            self.header = {"Authorization": "token " + self.token}
+        else:
+            self.header = None
 
     def __call_api(self, url, method='GET', params=None, data=None):
         """ Private method used to call the API.
