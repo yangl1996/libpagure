@@ -490,3 +490,33 @@ class Pagure(object):
         return_value = self.__call_api(request_url)
 
         return return_value
+
+    def new_project(self, name, description, namespace=None, url=None,
+                    avatar_email=None, create_readme=False):
+        """
+        Create a new project on the pagure instance
+        :param name: the name of the new project.
+        :param description: A short description of the new project.
+        :param namespace: The namespace of the project to fork
+        :param url: A url providing more information about the project.
+        :param avatar_email: An email address for the avatar of the project.
+        :param create_readme: Boolean to specify if there should be a
+            readme added to the project on creation.
+        :return:
+        """
+        request_url = "{}/api/0/new".format(self.instance)
+
+        payload = {'name': name, 'description': description}
+        if namespace:
+            payload['namespace'] = namespace
+        if url:
+            payload['url'] = url
+        if avatar_email:
+            payload['avatar_email'] = avatar_email
+        if create_readme:
+            payload['create_readme'] = create_readme
+
+        return_value = self.__call_api(request_url, data=payload,
+                                       method='POST')
+
+        return return_value['message']
