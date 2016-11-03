@@ -507,13 +507,13 @@ class Pagure(object):
         request_url = "{}/api/0/new".format(self.instance)
 
         payload = {'name': name, 'description': description}
-        if namespace:
+        if namespace is not None:
             payload['namespace'] = namespace
-        if url:
+        if url is not None:
             payload['url'] = url
-        if avatar_email:
+        if avatar_email is not None:
             payload['avatar_email'] = avatar_email
-        if create_readme:
+        if create_readme is not None:
             payload['create_readme'] = create_readme
 
         return_value = self.__call_api(request_url, data=payload,
