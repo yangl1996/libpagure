@@ -39,9 +39,10 @@ python3 -m pip install libpagure
 ```
 >>> from libpagure import Pagure
 >>> pg = Pagure(pagure_token="foobar")
->>> pg.new_project(name="foo", description="bar", url="http://foobar.io", create_readme=True)
+>>> pg.new_project(name="foo", description="bar", url="http://foobar.io",
+                   create_readme=True)
 >>> Project "foo" created
 ```
 
 This library is a Python warp of Pagure web APIs.
-You may refer to [Pagure API](https://pagure.io/api/0/) reference.
+You can refer to [Pagure API](https://pagure.io/api/0/) reference.
