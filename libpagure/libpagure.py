@@ -328,13 +328,22 @@ class Pagure(object):
         if return_value['message'] != "Issue created":
             raise Exception(return_value['message'])
 
-    def list_issues(self, status=None, tags=None, assignee=None, author=None):
+    def list_issues(
+            self, status=None, tags=None, assignee=None, author=None,
+            milestones=None, priority=None, no_stones=None, since=None
+    ):
         """
         List all issues of a project.
         :param status: filters the status of the issues
         :param tags: filers the tags of the issues
         :param assignee: filters the assignee of the issues
         :param author: filters the author of the issues
+        :param milestones: filters the milestones of the issues (list of strings)
+        :param priority: filters the priority of the issues
+        :param no_stones: If True returns only the issues having no milestone,
+            if False returns only the issues having a milestone
+        :param since: Filters the issues updated after this date.
+            The date can either be provided as an unix date or in the format Y-M-D
         :return:
         """
         if self.username is None:
@@ -353,6 +362,14 @@ class Pagure(object):
             payload['assignee'] = assignee
         if author is not None:
             payload['author'] = author
+        if milestones is not None:
+            payload['milestones'] = milestones
+        if priority is not None:
+            payload['priority'] = priority
+        if no_stones is not None:
+            payload['no_stones'] = no_stones
+        if since is not None:
+            payload['since'] = since
 
         return_value = self.__call_api(request_url, params=payload)
 
