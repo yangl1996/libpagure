@@ -412,11 +412,13 @@ class Pagure(object):
 
         return return_value
 
-    def change_issue_status(self, issue_id, new_status):
+    def change_issue_status(self, issue_id, new_status, close_status=None):
         """
         Change the status of an issue.
         :param issue_id: the id of the issue
         :param new_status: the new status fo the issue
+        :param close_status: optional param to add reason why issue
+            has been closed (like wontfix, fixed, duplicate, ...)
         :return:
         """
         if self.username is None:
@@ -428,6 +430,8 @@ class Pagure(object):
                 issue_id)
 
         payload = {'status': new_status}
+        if close_status is not None:
+            payload['close_status'] = close_status
 
         return_value = self.__call_api(request_url,
                                        method='POST', data=payload)
