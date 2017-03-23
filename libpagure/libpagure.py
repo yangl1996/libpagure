@@ -439,6 +439,29 @@ class Pagure(object):
         if not return_value['message'].startswith("Successfully"):
             raise Exception(return_value['message'])
 
+    def change_issue_milestone(self, issue_id, milestone):
+        """
+        Change the milestone of an issue.
+        :param issue_id: the id of the issue
+        :param milestone: the new milestone for the issue
+            (set None to remove milestone)
+        :return:
+        """
+        if self.username is None:
+            request_url = "{}/api/0/{}/issue/{}/milestone".format(
+                self.instance, self.repo, issue_id)
+        else:
+            request_url = "{}/api/0/fork/{}/{}/issue/{}/milestone".format(
+                self.instance, self.username, self.repo, issue_id)
+
+        payload = {} if milestone is None else {'milestone': milestone}
+
+        return_value = self.__call_api(request_url,
+                                       method='POST', data=payload)
+
+        if not return_value['message'].startswith("Successfully"):
+            raise Exception(return_value['message'])
+
     def comment_issue(self, issue_id, body):
         """
         Comment to an issue.
