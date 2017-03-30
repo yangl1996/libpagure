@@ -9,7 +9,7 @@ except ImportError:
 setup(
     name='libpagure',
     packages=['libpagure'],
-    version='0.8',
+    version='0.9',
     description='A Python library for Pagure APIs.',
     author='Lei Yang',
     author_email='yltt1234512@gmail.com',
