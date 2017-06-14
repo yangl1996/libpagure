@@ -210,11 +210,9 @@ class Project(object):
         self.token = project_token
         self.repo = project_name
         self.namespace = namespace
-        self.instance = instance_url
+        self.session = requests.session()
         if self.token:
-            self.header = {"Authorization": "token " + self.token}
-        else:
-            self.header = None
+            self.session.headers.update({"Authorization": "token " + self.token})
             
     def _call_api(self, endpoint, method='GET', params=None, data=None):
         """ Method used to call the API.
