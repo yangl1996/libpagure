@@ -24,37 +24,29 @@ class Pagure(object):
     # TODO: write some unit tests
     def __init__(
             self,
-            pagure_token=None,
-            pagure_repository=None,
-            fork_username=None,
+            user_token=None,
             instance_url="https://pagure.io",
             insecure=False):
         """
         Create an instance.
         :param pagure_token: pagure API token
-        :param pagure_repository: pagure project name
-        :param fork_username: if this is a fork, it's the username
-             of the fork creator
         :param instance_url: the URL of pagure instance name
+        :param insecure: currently not implemented
         :return:
         """
-        self.token = pagure_token
-        self.repo = pagure_repository
-        self.username = fork_username
+        self.token = user_token
         self.instance = instance_url
         self.session = requests.session()
         self.insecure = insecure
         if self.token:
-            self.header = {"Authorization": "token " + self.token}
-        else:
-            self.header = None
+            self.session.headers.update({"Authorization": "token " + self.token})
 
-    def _call_api(self, url, method='GET', params=None, data=None):
+    def _call_api(self, endpoint, method='GET', params=None, data=None):
         """ Method used to call the API.
         It returns the raw JSON returned by the API or raises an exception
         if something goes wrong.
 
-        :arg url: the URL to call
+        :arg endpoint: the endpoint to call, based on /api/0
         :kwarg method: the HTTP method to use when calling the specified
             URL, can be GET, POST, DELETE, UPDATE...
             Defaults to GET
@@ -62,14 +54,13 @@ class Pagure(object):
         :kwarg data: the data to send to a POST request
 
         """
-
+        base_url = "{}/api/0".format(self.instance)
         req = self.session.request(
             method=method,
-            url=url,
+            url=base_url+endpoint,
             params=params,
-            headers=self.header,
             data=data,
-            verify=not self.insecure,
+            verify=not self.insecure
         )
 
         output = None
@@ -84,8 +75,7 @@ class Pagure(object):
             LOG.debug('full output: {0}'.format(output))
             if output is None:
                 # TODO: use a dedicated error class
-                raise Exception(
-                    'No output returned by %s' % req.url)
+                raise Exception('No output returned by %s' % req.url)
             if 'error_code' in output:
                 raise APIError(output['error'])
 
@@ -96,8 +86,9 @@ class Pagure(object):
         Get Pagure API version.
         :return:
         """
-        request_url = "{}/api/0/version".format(self.instance)
-        return_value = self._call_api(request_url)
+        endpoint = "/version"
+        
+        return_value = self._call_api(endpoint)
         return return_value['version']
 
     def list_users(self, pattern=None):
@@ -106,31 +97,13 @@ class Pagure(object):
         :param pattern: filters the starting letters of the return value
         :return:
         """
-        request_url = "{}/api/0/users".format(self.instance)
+        endpoint = "/users"
+        
         params = None
         if pattern:
             params = {'pattern': pattern}
-        return_value = self._call_api(request_url, params=params)
+        return_value = self._call_api(endpoint, params=params)
         return return_value['users']
-
-    def list_tags(self, pattern=None):
-        """
-        List all tags made on this project.
-        :param pattern: filters the starting letters of the return value
-        :return:
-        """
-        if self.username is None:
-            request_url = "{}/api/0/{}/tags".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/tags".format(
-                self.instance, self.username, self.repo)
-        params = None
-        if pattern:
-            params = {'pattern': pattern}
-
-        return_value = self._call_api(request_url, params=params)
-        return return_value['tags']
 
     def list_groups(self, pattern=None):
         """
@@ -138,12 +111,12 @@ class Pagure(object):
         :param pattern: filters the starting letters of the return value
         :return:
         """
-        request_url = "{}/api/0/groups".format(self.instance)
+        endpoint = "/groups"
+        
         params = None
         if pattern:
             params = {'pattern': pattern}
-
-        return_value = self._call_api(request_url, params=params)
+        return_value = self._call_api(endpoint, params=params)
         return return_value['groups']
 
     def error_codes(self):
@@ -151,10 +124,158 @@ class Pagure(object):
         Get a dictionary of all error codes.
         :return:
         """
-        request_url = "{}/api/0/error_codes".format(self.instance)
-        return_value = self._call_api(request_url)
+        endpoint = "/error_codes"
+        
+        return_value = self._call_api(endpoint)
         return return_value
 
+    def list_projects(self, tags=None, username=None, fork=None):
+        """
+        Lisk all projects on this Pagure instance.
+        :param tags: filters the tags of the project
+        :param username: filters the username of the project administrators
+        :param fork: filters whether it is a fork (True) or not (False)
+        :return:
+        """
+        endpoint = "/projects"
+        
+        payload = {}
+        if tags is not None:
+            payload['tags'] = tags
+        if username is not None:
+            payload['username'] = username
+        if fork is not None:
+            payload['fork'] = fork
+        return_value = self._call_api(endpoint, params=payload)
+        return return_value['projects']
+
+    def user_info(self, username):
+        """
+        Get info of a specific user.
+        :param username: the username of the user to get info about
+        :return:
+        """
+        endpoint = "/user/{}".format(username)
+        
+        return_value = self._call_api(endpoint)
+        return return_value
+
+    def new_project(self, name, description, namespace=None, url=None,
+                    avatar_email=None, create_readme=False):
+        """
+        Create a new project on the pagure instance
+        :param name: the name of the new project.
+        :param description: A short description of the new project.
+        :param namespace: The namespace of the project to fork
+        :param url: A url providing more information about the project.
+        :param avatar_email: An email address for the avatar of the project.
+        :param create_readme: Boolean to specify if there should be a
+            readme added to the project on creation.
+        :return:
+        """
+        endpoint = "/new"
+
+        payload = {'name': name, 'description': description}
+        if namespace is not None:
+            payload['namespace'] = namespace
+        if url is not None:
+            payload['url'] = url
+        if avatar_email is not None:
+            payload['avatar_email'] = avatar_email
+        if create_readme is not None:
+            payload['create_readme'] = create_readme
+
+        return_value = self._call_api(endpoint, data=payload, method='POST')
+        return return_value['message']
+        
+class Project(object):
+    
+    def __init__(
+            self,
+            pagure,
+            project_token=None,
+            project_name=None,
+            namespace=None):
+        """
+        Create an instance.
+        :param pagure_instance: an instance of Pagure class
+        :param pagure_token: pagure API token
+        :param pagure_repository: pagure project name
+        :param fork_username: if this is a fork, it's the username
+             of the fork creator
+        :param instance_url: the URL of pagure instance name
+        :return:
+        """
+        self.pagure = pagure;
+        self.token = project_token
+        self.repo = project_name
+        self.namespace = namespace
+        self.instance = instance_url
+        if self.token:
+            self.header = {"Authorization": "token " + self.token}
+        else:
+            self.header = None
+            
+    def _call_api(self, endpoint, method='GET', params=None, data=None):
+        """ Method used to call the API.
+        It returns the raw JSON returned by the API or raises an exception
+        if something goes wrong.
+
+        :arg endpoint: the endpoint to call, based on /api/0/<project name>
+        :kwarg method: the HTTP method to use when calling the specified
+            URL, can be GET, POST, DELETE, UPDATE...
+            Defaults to GET
+        :kwarg params: the params to specify to a GET request
+        :kwarg data: the data to send to a POST request
+
+        """
+        if self.namespace is None:
+            base_url = "{}/api/0/{}".format(
+                self.pagure.instance, self.repo)
+        else:
+            base_url = "{}/api/0/fork/{}/{}".format(
+                self.pagure.instance, self.namespace, self.repo)
+                
+        req = self.session.request(
+            method=method,
+            url=base_url+endpoint,
+            params=params,
+            data=data,
+            verify=not self.pagure.insecure
+        )
+
+        output = None
+        try:
+            output = req.json()
+        except Exception as err:
+            LOG.debug(req.text)
+            # TODO: use a dedicated error class
+            raise Exception('Error while decoding JSON: {0}'.format(err))
+
+        if req.status_code != 200:
+            LOG.debug('full output: {0}'.format(output))
+            if output is None:
+                # TODO: use a dedicated error class
+                raise Exception('No output returned by %s' % req.url)
+            if 'error_code' in output:
+                raise APIError(output['error'])
+
+        return output
+    
+    def list_tags(self, pattern=None):
+        """
+        List all tags made on this project.
+        :param pattern: filters the starting letters of the return value
+        :return:
+        """
+        endpoint = "/tags"
+        params = None
+        if pattern:
+            params = {'pattern': pattern}
+
+        return_value = self._call_api(endpoint, params=params)
+        return return_value['tags']
+        
     def list_requests(self, status=None, assignee=None, author=None):
         """
         Get all pull requests of a project.
@@ -163,12 +284,7 @@ class Pagure(object):
         :param author: filters the author of the requests
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-requests".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-requests".format(
-                self.instance, self.username, self.repo)
+        endpoint = "/pull-requests"
         payload = {}
         if status is not None:
             payload['status'] = status
@@ -177,7 +293,7 @@ class Pagure(object):
         if author is not None:
             payload['author'] = author
 
-        return_value = self._call_api(request_url, params=payload)
+        return_value = self._call_api(endpoint, params=payload)
         return return_value['requests']
 
     def request_info(self, request_id):
@@ -186,15 +302,9 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}".format(
-                self.instance, self.username, self.repo,
-                request_id)
+        endpoint = "/pull-request/{}".format(request_id)
 
-        return_value = self._call_api(request_url)
+        return_value = self._call_api(endpoint)
         return return_value
 
     def merge_request(self, request_id):
@@ -203,16 +313,9 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}/merge".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}/merge".format(
-                self.instance, self.username, self.repo,
-                request_id)
-
-        return_value = self._call_api(request_url, method='POST')
-
+        endpoint = "/pull-request/{}/merge".format(request_id)
+ 
+        return_value = self._call_api(endpoint, method='POST')
         if return_value['message'] != "Changes merged!":
             raise Exception(return_value['message'])
 
@@ -222,16 +325,9 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}/close".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}/close".format(
-                self.instance, self.username, self.repo,
-                request_id)
-
-        return_value = self._call_api(request_url, method='POST')
-
+        endpoint = "/pull-request/{}/close".format(request_id)
+        
+        return_value = self._call_api(endpoint, method='POST')
         if return_value['message'] != "Pull-request closed!":
             raise Exception(return_value['message'])
 
@@ -246,13 +342,7 @@ class Pagure(object):
         :param row: which line of code to comment on
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}/comment".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}/comment".format(
-                self.instance, self.username, self.repo,
-                request_id)
+        endpoint = "/pull-request/{}/comment".format(request_id)
 
         payload = {'comment': body}
         if commit is not None:
@@ -262,9 +352,8 @@ class Pagure(object):
         if row is not None:
             payload['row'] = row
 
-        return_value = self._call_api(request_url,
+        return_value = self._call_api(endpoint,
                                       method='POST', data=payload)
-
         if return_value['message'] != "Comment added":
             raise Exception(return_value['message'])
 
@@ -282,13 +371,7 @@ class Pagure(object):
         :param commit: which commit to flag on
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}/flag".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}/flag".format(
-                self.instance, self.username, self.repo,
-                request_id)
+        endpoint = "/pull-request/{}/flag".format(request_id)
 
         payload = {'username': username, 'percent': percent,
                    'comment': comment, 'url': url}
@@ -297,7 +380,7 @@ class Pagure(object):
         if uid is not None:
             payload['uid'] = uid
 
-        return_value = self._call_api(request_url,
+        return_value = self._call_api(endpoint,
                                       method='POST', data=payload)
 
         if return_value['message'] != "Flag added" and return_value['message'] != "Flag updated":
@@ -311,18 +394,13 @@ class Pagure(object):
         :param private: whether create this issue as private
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/new_issue".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/new_issue".format(
-                self.instance, self.username, self.repo)
+        endpoint = "/new_issue"
 
         payload = {'title': title, 'issue_content': content}
         if private:
             payload['private'] = private
 
-        return_value = self._call_api(request_url,
+        return_value = self._call_api(endpoint,
                                       method='POST', data=payload)
 
         if return_value['message'] != "Issue created":
@@ -346,12 +424,7 @@ class Pagure(object):
             The date can either be provided as an unix date or in the format Y-M-D
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issues".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issues".format(
-                self.instance, self.username, self.repo)
+        endpoint = "/issues"
 
         payload = {}
         if status is not None:
@@ -371,7 +444,7 @@ class Pagure(object):
         if since is not None:
             payload['since'] = since
 
-        return_value = self._call_api(request_url, params=payload)
+        return_value = self._call_api(endpoint, params=payload)
 
         return return_value['issues']
 
@@ -381,16 +454,9 @@ class Pagure(object):
         :param issue_id: the id of the issue
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}".format(
-                self.instance, self.repo, issue_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}".format(
-                self.instance, self.username, self.repo,
-                issue_id)
+        endpoint = "/issue/{}".format(issue_id)
 
-        return_value = self._call_api(request_url)
-
+        return_value = self._call_api(endpoint)
         return return_value
 
     def get_list_comment(self, issue_id, comment_id):
@@ -400,16 +466,9 @@ class Pagure(object):
         :param comment_id: the id of the comment
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}/comment/{}".format(
-                self.instance, self.repo, issue_id, comment_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}/comment/{}".format(
-                self.instance, self.username, self.repo,
-                issue_id, comment_id)
+        endpoint = "/issue/{}/comment/{}".format(issue_id, comment_id)
 
-        return_value = self._call_api(request_url)
-
+        return_value = self._call_api(endpoint)
         return return_value
 
     def change_issue_status(self, issue_id, new_status, close_status=None):
@@ -421,19 +480,13 @@ class Pagure(object):
             has been closed (like wontfix, fixed, duplicate, ...)
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}/status".format(
-                self.instance, self.repo, issue_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}/status".format(
-                self.instance, self.username, self.repo,
-                issue_id)
+        endpoint = "/issue/{}/status".format(issue_id)
 
         payload = {'status': new_status}
         if close_status is not None:
             payload['close_status'] = close_status
 
-        return_value = self._call_api(request_url,
+        return_value = self._call_api(endpoint,
                                       method='POST', data=payload)
 
         if not return_value['message'].startswith("Successfully"):
@@ -447,16 +500,11 @@ class Pagure(object):
             (set None to remove milestone)
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}/milestone".format(
-                self.instance, self.repo, issue_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}/milestone".format(
-                self.instance, self.username, self.repo, issue_id)
+        endpoint = "/issue/{}/milestone".format(issue_id)
 
         payload = {} if milestone is None else {'milestone': milestone}
 
-        return_value = self._call_api(request_url,
+        return_value = self._call_api(endpoint,
                                       method='POST', data=payload)
 
         if not return_value['message'].startswith("Successfully"):
@@ -469,17 +517,11 @@ class Pagure(object):
         :param body: the comment body
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}/comment".format(
-                self.instance, self.repo, issue_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}/comment".format(
-                self.instance, self.username, self.repo,
-                issue_id)
+        endpoint = "/issue/{}/comment".format(issue_id)
 
         payload = {'comment': body}
 
-        return_value = self._call_api(request_url,
+        return_value = self._call_api(endpoint,
                                       method='POST', data=payload)
 
         if return_value['message'] != 'Comment added':
@@ -490,77 +532,8 @@ class Pagure(object):
         List all git tags made to the project.
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/git/tags".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/git/tags".format(
-                self.instance, self.username, self.repo)
-
-        return_value = self._call_api(request_url)
+        endpoint = "/git/tags"
+        
+        return_value = self._call_api(endpoint)
 
         return return_value['tags']
-
-    def list_projects(self, tags=None, username=None, fork=None):
-        """
-        Lisk all projects on this Pagure instance.
-        :param tags: filters the tags of the project
-        :param username: filters the username of the project administrators
-        :param fork: filters whether it is a fork (True) or not (False)
-        :return:
-        """
-        request_url = "{}/api/0/projects".format(self.instance)
-
-        payload = {}
-        if tags is not None:
-            payload['tags'] = tags
-        if username is not None:
-            payload['username'] = username
-        if fork is not None:
-            payload['fork'] = fork
-
-        return_value = self._call_api(request_url, params=payload)
-
-        return return_value['projects']
-
-    def user_info(self, username):
-        """
-        Get info of a specific user.
-        :param username: the username of the user to get info about
-        :return:
-        """
-        request_url = "{}/api/0/user/{}".format(self.instance, username)
-
-        return_value = self._call_api(request_url)
-
-        return return_value
-
-    def new_project(self, name, description, namespace=None, url=None,
-                    avatar_email=None, create_readme=False):
-        """
-        Create a new project on the pagure instance
-        :param name: the name of the new project.
-        :param description: A short description of the new project.
-        :param namespace: The namespace of the project to fork
-        :param url: A url providing more information about the project.
-        :param avatar_email: An email address for the avatar of the project.
-        :param create_readme: Boolean to specify if there should be a
-            readme added to the project on creation.
-        :return:
-        """
-        request_url = "{}/api/0/new".format(self.instance)
-
-        payload = {'name': name, 'description': description}
-        if namespace is not None:
-            payload['namespace'] = namespace
-        if url is not None:
-            payload['url'] = url
-        if avatar_email is not None:
-            payload['avatar_email'] = avatar_email
-        if create_readme is not None:
-            payload['create_readme'] = create_readme
-
-        return_value = self._call_api(request_url, data=payload,
-                                      method='POST')
-
-        return return_value['message']
