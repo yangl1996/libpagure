@@ -6,6 +6,16 @@ except ImportError:
     from distutils.core import setup
 
 
+def get_install_requires():
+    with open('requirements.txt', 'r') as f:
+        return [line.strip() for line in f]
+
+
+def get_test_requires():
+    with open('test-requirements.txt', 'r') as f:
+        return [line.strip() for line in f if not line.startswith('-r ')]
+
+
 setup(
     name='libpagure',
     packages=['libpagure'],
@@ -30,5 +40,6 @@ setup(
 
     ],
     license='GNU General Public License v2.0',
-    install_requires=['requests'],
+    install_requires=get_install_requires(),
+    test_requires=get_test_requires(),
 )
