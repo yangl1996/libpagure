@@ -81,11 +81,7 @@ class Pagure(object):
             raise Exception('Error while decoding JSON: {0}'.format(err))
 
         if req.status_code != 200:
-            LOG.debug('full output: {0}'.format(output))
-            if output is None:
-                # TODO: use a dedicated error class
-                raise Exception(
-                    'No output returned by %s' % req.url)
+            LOG.error(output)
             if 'error_code' in output:
                 raise APIError(output['error'])
 
@@ -213,8 +209,7 @@ class Pagure(object):
 
         return_value = self._call_api(request_url, method='POST')
 
-        if return_value['message'] != "Changes merged!":
-            raise Exception(return_value['message'])
+        LOG.debug(return_value)
 
     def close_request(self, request_id):
         """
@@ -232,8 +227,7 @@ class Pagure(object):
 
         return_value = self._call_api(request_url, method='POST')
 
-        if return_value['message'] != "Pull-request closed!":
-            raise Exception(return_value['message'])
+        LOG.debug(return_value)
 
     def comment_request(self, request_id, body, commit=None,
                         filename=None, row=None):
@@ -265,8 +259,7 @@ class Pagure(object):
         return_value = self._call_api(request_url,
                                       method='POST', data=payload)
 
-        if return_value['message'] != "Comment added":
-            raise Exception(return_value['message'])
+        LOG.debug(return_value)
 
     def flag_request(self, request_id, username, percent, comment, url,
                      uid=None, commit=None):
@@ -300,8 +293,7 @@ class Pagure(object):
         return_value = self._call_api(request_url,
                                       method='POST', data=payload)
 
-        if return_value['message'] != "Flag added" and return_value['message'] != "Flag updated":
-            raise Exception(return_value['message'])
+        LOG.debug(return_value)
 
     def create_issue(self, title, content, private=None):
         """
@@ -325,8 +317,7 @@ class Pagure(object):
         return_value = self._call_api(request_url,
                                       method='POST', data=payload)
 
-        if return_value['message'] != "Issue created":
-            raise Exception(return_value['message'])
+        LOG.debug(return_value)
 
     def list_issues(
             self, status=None, tags=None, assignee=None, author=None,
@@ -436,8 +427,7 @@ class Pagure(object):
         return_value = self._call_api(request_url,
                                       method='POST', data=payload)
 
-        if not return_value['message'].startswith("Successfully"):
-            raise Exception(return_value['message'])
+        LOG.debug(return_value)
 
     def change_issue_milestone(self, issue_id, milestone):
         """
@@ -459,8 +449,7 @@ class Pagure(object):
         return_value = self._call_api(request_url,
                                       method='POST', data=payload)
 
-        if not return_value['message'].startswith("Successfully"):
-            raise Exception(return_value['message'])
+        LOG.debug(return_value)
 
     def comment_issue(self, issue_id, body):
         """
@@ -482,8 +471,7 @@ class Pagure(object):
         return_value = self._call_api(request_url,
                                       method='POST', data=payload)
 
-        if return_value['message'] != 'Comment added':
-            raise Exception(return_value['message'])
+        LOG.debug(return_value)
 
     def project_tags(self):
         """
