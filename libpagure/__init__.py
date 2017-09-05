@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from .libpagure import *
+from .libpagure import *  # noqa
