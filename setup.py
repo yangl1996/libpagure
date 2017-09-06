@@ -19,7 +19,7 @@ def get_test_requires():
 setup(
     name='libpagure',
     packages=['libpagure'],
-    version='0.9',
+    version='0.10',
     description='A Python library for Pagure APIs.',
     author='Lei Yang',
     author_email='yltt1234512@gmail.com',
