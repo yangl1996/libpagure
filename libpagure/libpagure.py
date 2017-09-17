@@ -577,3 +577,19 @@ class Pagure(object):
                                       method='POST')
 
         return return_value['message']
+
+    def project_branches(self):
+        """
+        List all branches associated with a repository.
+        :return:
+        """
+        if self.username is None:
+            request_url = "{}/api/0/{}/git/branches".format(
+                self.instance, self.repo)
+        else:
+            request_url = "{}/api/0/fork/{}/{}/git/branches".format(
+                self.instance, self.username, self.repo)
+
+        return_value = self._call_api(request_url)
+
+        return return_value['branches']
