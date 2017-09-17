@@ -492,12 +492,22 @@ class Pagure(object):
 
         return return_value['tags']
 
-    def list_projects(self, tags=None, username=None, fork=None):
+    def list_projects(self, tags=None, pattern=None, username=None, owner=None,
+                      namespace=None, fork=None, short=None, page=None,
+                      per_page=None):
         """
         Lisk all projects on this Pagure instance.
         :param tags: filters the tags of the project
+        :param pattern: filters the projects by the pattern string
         :param username: filters the username of the project administrators
+        :param owner: filters the projects by ownership
+        :param namespace: filters the projects by namespace
         :param fork: filters whether it is a fork (True) or not (False)
+        :param short: whether to return the entrie JSON or just a sub-set
+        :param page: specifies that pagination should be turned on and that
+            this specific page should be displayed
+        :param per_page: the number of projects to return per page.
+            The maximum is 100
         :return:
         """
         request_url = "{}/api/0/projects".format(self.instance)
@@ -505,10 +515,22 @@ class Pagure(object):
         payload = {}
         if tags is not None:
             payload['tags'] = tags
+        if pattern is not None:
+            payload['pattern'] = pattern
         if username is not None:
             payload['username'] = username
+        if owner is not None:
+            payload['owner'] = owner
+        if namespace is not None:
+            payload['namespace'] = namespace
         if fork is not None:
             payload['fork'] = fork
+        if short is not None:
+            payload['short'] = short
+        if page is not None:
+            payload['page'] = str(page)
+        if per_page is not None:
+            payload['per_page'] = str(per_page)
 
         return_value = self._call_api(request_url, params=payload)
 
