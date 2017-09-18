@@ -523,8 +523,7 @@ class Pagure(object):
             payload['url'] = url
         if avatar_email is not None:
             payload['avatar_email'] = avatar_email
-        if create_readme is not None:
-            payload['create_readme'] = create_readme
+        payload['create_readme'] = create_readme
         payload['private'] = private
 
         return_value = self._call_api(request_url, data=payload,
