@@ -28,6 +28,7 @@ class Pagure(object):
             pagure_token=None,
             pagure_repository=None,
             fork_username=None,
+            namespace=None,
             instance_url="https://pagure.io",
             insecure=False):
         """
@@ -42,6 +43,7 @@ class Pagure(object):
         self.token = pagure_token
         self.repo = pagure_repository
         self.username = fork_username
+        self.namespace = namespace
         self.instance = instance_url
         self.session = requests.session()
         self.insecure = insecure
@@ -85,8 +87,31 @@ class Pagure(object):
             LOG.error(output)
             if 'error_code' in output:
                 raise APIError(output['error'])
-
         return output
+
+    def create_basic_url(self):
+        """ Create URL prefix for API calls based on type of repo.
+
+        Repo may be forked and may be in namespace. That makes total 4
+        different types of URL.
+
+        :return:
+        """
+        if self.username is None:
+            if self.namespace is None:
+                request_url = "{}/api/0/{}/".format(
+                    self.instance, self.repo)
+            else:
+                request_url = "{}/api/0/{}/{}/".format(
+                    self.instance, self.namespace, self.repo)
+        else:
+            if self.namespace is None:
+                request_url = "{}/api/0/fork/{}/{}/".format(
+                    self.instance, self.username, self.repo)
+            else:
+                request_url = "{}/api/0/fork/{}/{}/{}/".format(
+                    self.instance, self.username, self.namespace, self.repo)
+        return request_url
 
     def api_version(self):
         """
@@ -116,12 +141,8 @@ class Pagure(object):
         :param pattern: filters the starting letters of the return value
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/tags".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/tags".format(
-                self.instance, self.username, self.repo)
+        request_url = "{}tags".format(self.create_basic_url())
+
         params = None
         if pattern:
             params = {'pattern': pattern}
@@ -160,12 +181,8 @@ class Pagure(object):
         :param author: filters the author of the requests
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-requests".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-requests".format(
-                self.instance, self.username, self.repo)
+        request_url = "{}pull-requests".format(self.create_basic_url())
+
         payload = {}
         if status is not None:
             payload['status'] = status
@@ -183,13 +200,8 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}".format(
-                self.instance, self.username, self.repo,
-                request_id)
+        request_url = "{}pull-request/{}".format(self.create_basic_url(),
+                                                 request_id)
 
         return_value = self._call_api(request_url)
         return return_value
@@ -200,13 +212,8 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}/merge".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}/merge".format(
-                self.instance, self.username, self.repo,
-                request_id)
+        request_url = "{}pull-request/{}/merge".format(self.create_basic_url(),
+                                                       request_id)
 
         return_value = self._call_api(request_url, method='POST')
 
@@ -218,13 +225,8 @@ class Pagure(object):
         :param request_id: the id of the request
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}/close".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}/close".format(
-                self.instance, self.username, self.repo,
-                request_id)
+        request_url = "{}pull-request/{}/close".format(self.create_basic_url(),
+                                                       request_id)
 
         return_value = self._call_api(request_url, method='POST')
 
@@ -241,13 +243,8 @@ class Pagure(object):
         :param row: which line of code to comment on
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}/comment".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}/comment".format(
-                self.instance, self.username, self.repo,
-                request_id)
+        request_url = ("{}pull-request/{}/comment"
+                       .format(self.create_basic_url(), request_id))
 
         payload = {'comment': body}
         if commit is not None:
@@ -276,13 +273,8 @@ class Pagure(object):
         :param commit: which commit to flag on
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/pull-request/{}/flag".format(
-                self.instance, self.repo, request_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/pull-request/{}/flag".format(
-                self.instance, self.username, self.repo,
-                request_id)
+        request_url = "{}pull-request/{}/flag".format(self.create_basic_url(),
+                                                      request_id)
 
         payload = {'username': username, 'percent': percent,
                    'comment': comment, 'url': url}
@@ -304,12 +296,7 @@ class Pagure(object):
         :param private: whether create this issue as private
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/new_issue".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/new_issue".format(
-                self.instance, self.username, self.repo)
+        request_url = "{}new_issue".format(self.create_basic_url())
 
         payload = {'title': title, 'issue_content': content}
         if private:
@@ -340,12 +327,7 @@ class Pagure(object):
             Y-M-D
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issues".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issues".format(
-                self.instance, self.username, self.repo)
+        request_url = "{}issues".format(self.create_basic_url())
 
         payload = {}
         if status is not None:
@@ -375,13 +357,7 @@ class Pagure(object):
         :param issue_id: the id of the issue
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}".format(
-                self.instance, self.repo, issue_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}".format(
-                self.instance, self.username, self.repo,
-                issue_id)
+        request_url = "{}issue/{}".format(self.create_basic_url(), issue_id)
 
         return_value = self._call_api(request_url)
 
@@ -394,13 +370,8 @@ class Pagure(object):
         :param comment_id: the id of the comment
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}/comment/{}".format(
-                self.instance, self.repo, issue_id, comment_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}/comment/{}".format(
-                self.instance, self.username, self.repo,
-                issue_id, comment_id)
+        request_url = "{}issue/{}/comment/{}".format(self.create_basic_url(),
+                                                     issue_id, comment_id)
 
         return_value = self._call_api(request_url)
 
@@ -415,13 +386,8 @@ class Pagure(object):
             has been closed (like wontfix, fixed, duplicate, ...)
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}/status".format(
-                self.instance, self.repo, issue_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}/status".format(
-                self.instance, self.username, self.repo,
-                issue_id)
+        request_url = "{}issue/{}/status".format(self.create_basic_url(),
+                                                 issue_id)
 
         payload = {'status': new_status}
         if close_status is not None:
@@ -440,12 +406,8 @@ class Pagure(object):
             (set None to remove milestone)
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}/milestone".format(
-                self.instance, self.repo, issue_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}/milestone".format(
-                self.instance, self.username, self.repo, issue_id)
+        request_url = "{}issue/{}/milestone".format(self.create_basic_url(),
+                                                    issue_id)
 
         payload = {} if milestone is None else {'milestone': milestone}
 
@@ -461,13 +423,8 @@ class Pagure(object):
         :param body: the comment body
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/issue/{}/comment".format(
-                self.instance, self.repo, issue_id)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/issue/{}/comment".format(
-                self.instance, self.username, self.repo,
-                issue_id)
+        request_url = "{}issue/{}/comment".format(self.create_basic_url(),
+                                                  issue_id)
 
         payload = {'comment': body}
 
@@ -481,12 +438,7 @@ class Pagure(object):
         List all git tags made to the project.
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/git/tags".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/git/tags".format(
-                self.instance, self.username, self.repo)
+        request_url = "{}git/tags".format(self.create_basic_url())
 
         return_value = self._call_api(request_url)
 
@@ -583,12 +535,7 @@ class Pagure(object):
         List all branches associated with a repository.
         :return:
         """
-        if self.username is None:
-            request_url = "{}/api/0/{}/git/branches".format(
-                self.instance, self.repo)
-        else:
-            request_url = "{}/api/0/fork/{}/{}/git/branches".format(
-                self.instance, self.username, self.repo)
+        request_url = "{}git/branches".format(self.create_basic_url())
 
         return_value = self._call_api(request_url)
 
