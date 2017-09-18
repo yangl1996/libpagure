@@ -501,7 +501,7 @@ class Pagure(object):
         return return_value
 
     def new_project(self, name, description, namespace=None, url=None,
-                    avatar_email=None, create_readme=False):
+                    avatar_email=None, create_readme=False, private=False):
         """
         Create a new project on the pagure instance
         :param name: the name of the new project.
@@ -511,6 +511,7 @@ class Pagure(object):
         :param avatar_email: An email address for the avatar of the project.
         :param create_readme: Boolean to specify if there should be a
             readme added to the project on creation.
+        :param private: boolean to specify if the project is private
         :return:
         """
         request_url = "{}/api/0/new".format(self.instance)
@@ -524,6 +525,7 @@ class Pagure(object):
             payload['avatar_email'] = avatar_email
         if create_readme is not None:
             payload['create_readme'] = create_readme
+        payload['private'] = private
 
         return_value = self._call_api(request_url, data=payload,
                                       method='POST')
