@@ -280,3 +280,36 @@ def test_project_branches(mocker, simple_pg):
     simple_pg.project_branches()
     Pagure._call_api.assert_called_once_with(
         'https://pagure.io/api/0/testrepo/git/branches')
+
+def test_user_activity_stats(mocker, simple_pg):
+    """ Test the API call to get stats about a user activity"""
+    mocker.patch('libpagure.Pagure._call_api')
+    simple_pg.user_activity_stats('auser')
+    expected = {'username': 'auser'}
+    Pagure._call_api.assert_called_once_with(
+        'https://pagure.io/api/0/user/auser/activity/stats', params=expected)
+
+def test_user_activity_stats_by_date(mocker, simple_pg):
+    """ Test the API call to get stats about a user activity by specific date"""
+    mocker.patch('libpagure.Pagure._call_api')
+    simple_pg.user_activity_stats_by_date('auser',"2017-12-30")
+    expected = {'username': 'auser', 'date' : '2017-12-30'}
+    Pagure._call_api.assert_called_once_with(
+        'https://pagure.io/api/0/user/auser/activity/2017-12-30', params=expected)
+
+def test_list_pull_requests(mocker, simple_pg):
+    """ Test the API call to get stats about a user's pull requests"""
+    mocker.patch('libpagure.Pagure._call_api')
+    simple_pg.list_pull_requests('auser', 1)
+    expected = {'username': 'auser', 'page': 1}
+    Pagure._call_api.assert_called_once_with(
+        'https://pagure.io/api/0/user/auser/requests/filed', params=expected)
+
+
+def test_list_prs_actionable_by_user(mocker, simple_pg):
+    """ Test the API call to list PR's actionable for a given user"""
+    mocker.patch('libpagure.Pagure._call_api')
+    simple_pg.list_prs_actionable_by_user('auser', 1)
+    expected = {'username': 'auser', 'page': 1}
+    Pagure._call_api.assert_called_once_with(
+        'https://pagure.io/api/0/user/auser/requests/actionable', params=expected)

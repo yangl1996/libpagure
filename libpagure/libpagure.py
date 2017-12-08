@@ -520,6 +520,113 @@ class Pagure(object):
 
         return return_value
 
+    def user_activity_stats(self, username, format=None):
+        """
+        Retrieve the activity stats about a specific user over the last year.
+
+        Params:
+            username (string): filters the username of the user whose activity you are interested in.
+            format (string): Allows changing the of the date/time returned from iso format
+                             to unix timestamp Can be: timestamp or isoformat
+        Returns:
+            dict: A dictionary of activities done by a given user for all the projects
+                  for a given Pagure instance.
+        """
+        request_url = "{}/api/0/user/{}/activity/stats".format(self.instance, username)
+
+        payload = {}
+        if username is not None:
+            payload['username'] = username
+        if format is not None:
+            payload['format'] = format
+
+        return_value = self._call_api(request_url, params=payload)
+
+        return return_value
+
+    def user_activity_stats_by_date(self, username, date, grouped=None):
+        """
+         Retrieve activity information about a specific user on the specified date.
+
+        Params:
+            username (string): filters the username of the user whose activity you are interested in.
+            date (string): filters by the date of interest, best provided in ISO format: YYYY-MM-DD
+            grouped (boolean): filters whether or not to group the commits
+
+        Returns:
+            list: A list of activities done by a given user on some particular
+                  date for all the projects for given Pagure instance.
+        """
+        request_url = "{}/api/0/user/{}/activity/{}".format(self.instance, username, date)
+
+        payload = {}
+        if username is not None:
+            payload['username'] = username
+        if date is not None:
+            payload['date'] = date
+        if grouped is not None:
+            payload['grouped'] = grouped
+
+        return_value = self._call_api(request_url, params=payload)
+
+        return return_value['activities']
+
+    def list_pull_requests(self, username, page, status=None):
+        """
+        List pull-requests filed by user.
+
+        Params:
+            username (string): filters the username of the user whose activity you are interested in.
+            page (integer): the page requested. Defaults to 1.
+            status (string): filter the status of pull requests. Default: Open,
+                             can be Closed, Merged, All.
+
+        Returns:
+            list: A list of Pull-Requests filed by a given user for all the
+                  projects for given Pagure instance.
+        """
+        request_url = "{}/api/0/user/{}/requests/filed".format(self.instance, username)
+
+        payload = {}
+        if username is not None:
+            payload['username'] = username
+        if page is not None:
+            payload['page'] = page
+        if status is not None:
+            payload['status'] = status
+
+        return_value = self._call_api(request_url, params=payload)
+
+        return return_value['requests']
+
+    def list_prs_actionable_by_user(self, username, page, status=None):
+        """
+        List PRs actionable by user.
+
+        Params:
+            username (string): filters the username of the user whose activity you are interested in.
+            page (integer): the page requested. Defaults to 1.
+            status (string): filter the status of pull requests. Default: Open,
+                             can be Closed, Merged, All.
+
+        Returns:
+            list: A list of Pull-Requests a user is able to action for all the
+                  projects for given Pagure instance.
+        """
+        request_url = "{}/api/0/user/{}/requests/actionable".format(self.instance, username)
+
+        payload = {}
+        if username is not None:
+            payload['username'] = username
+        if page is not None:
+            payload['page'] = page
+        if status is not None:
+            payload['status'] = status
+
+        return_value = self._call_api(request_url, params=payload)
+
+        return return_value['requests']
+
     def new_project(self, name, description, namespace=None, url=None,
                     avatar_email=None, create_readme=False, private=False):
         """
