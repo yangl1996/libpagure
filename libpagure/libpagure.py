@@ -288,18 +288,33 @@ class Pagure(object):
 
         LOG.debug(return_value)
 
-    def create_issue(self, title, content, private=None):
+    def create_issue(self, title, content, priority=None,
+                     milestone=None, tags=None, assignee=None,
+                     private=None):
         """
         Create a new issue.
         :param title: the title of the issue
         :param content: the description of the issue
+        :param priority: the priority of the ticket
+        :param milestone: the milestone of the ticket
+        :param tags: comma sperated list of tag for the ticket
+        :param assignee: the assignee of the ticket
         :param private: whether create this issue as private
         :return:
         """
         request_url = "{}new_issue".format(self.create_basic_url())
 
         payload = {'title': title, 'issue_content': content}
-        if private:
+
+        if priority is not None:
+            payload['priority'] = priority
+        if milestone is not None:
+            payload['milestone'] = milestone
+        if tags is not None:
+            payload['tag'] = tags
+        if assignee is not None:
+            payload['assignee'] = assignee
+        if private is not None:
             payload['private'] = private
 
         return_value = self._call_api(request_url,
