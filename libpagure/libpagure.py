@@ -324,7 +324,8 @@ class Pagure(object):
 
     def list_issues(
             self, status=None, tags=None, assignee=None, author=None,
-            milestones=None, priority=None, no_stones=None, since=None
+            milestones=None, priority=None, no_stones=None, since=None,
+            order=None
     ):
         """
         List all issues of a project.
@@ -340,6 +341,8 @@ class Pagure(object):
         :param since: Filters the issues updated after this date.
             The date can either be provided as an unix date or in the format
             Y-M-D
+        :param order: Set the ordering of the issues. This can be asc or desc.
+            Default: desc
         :return:
         """
         request_url = "{}issues".format(self.create_basic_url())
@@ -361,6 +364,8 @@ class Pagure(object):
             payload['no_stones'] = no_stones
         if since is not None:
             payload['since'] = since
+        if order is not None:
+            payload['order'] = order
 
         return_value = self._call_api(request_url, params=payload)
 
