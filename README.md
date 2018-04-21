@@ -79,5 +79,5 @@ python3 -m pip install libpagure
 >>> Project "foo" created
 ```
 
-This library is a Python warp of Pagure web APIs.
+This library is a Python wrapper of Pagure web APIs.
 You can refer to [Pagure API](https://pagure.io/api/0/) reference.
